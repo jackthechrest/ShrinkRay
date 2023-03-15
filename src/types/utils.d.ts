@@ -3,3 +3,12 @@ type DatabaseConstraintError = {
   columnName?: string;
   message?: string;
 };
+
+type NewLinkRequest = {
+  orignalUrl: string;
+};
+
+type AuthRequest = {
+  username: string;
+  password: string;
+};
