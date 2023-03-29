@@ -1,22 +1,25 @@
 import { Request, Response } from 'express';
 import argon2 from 'argon2';
-import { addMinutes, isBefore, parseISO, formatDistanceToNow } from 'date-fns';
 import {
   addNewUser,
-  getUserById,
   getUserByUsername,
 } from '../models/UserModel';
 import { parseDatabaseError } from '../utils/db-utils';
 
 async function registerUser(req: Request, res: Response): Promise<void> {
-    // TODO: Implement the registration code
-    // Make sure to check if the user with the given username exists before attempting to add the account
-    // Make sure to hash the password before adding it to the database
-    // Wrap the call to `addNewUser` in a try/catch like in the sample code
+    // Implement the registration code
     const { username, password } = req.body as AuthRequest;
 
     // IMPORTANT: Hash the password
     const passwordHash = await argon2.hash(password);
+
+    // Make sure to check if the user with the given username exists before attempting to add the account
+    const user = await getUserByUsername(username);
+
+    if (user) {
+      res.sendStatus(409); // conflict
+      return;
+    }
 
     try {
       // IMPORTANT: Store the `passwordHash` and NOT the plaintext password
@@ -30,4 +33,36 @@ async function registerUser(req: Request, res: Response): Promise<void> {
     }
 }
 
-export {registerUser};
+async function logIn(req: Request, res: Response): Promise<void> {
+  const { username, password } = req.body as AuthRequest;
+
+  const user = await getUserByUsername(username);
+
+  if (!user) {
+    res.sendStatus(404); // not found
+    return;
+  }
+
+  const { passwordHash } = user;
+
+  if (!(await argon2.verify(passwordHash, password))) {
+    res.sendStatus(404); // 404 not found - user w/ email/password doesn't exist
+    return;
+  }
+
+  // NOTES: Remember to clear the session before setting their authenticated session data
+  await req.session.clearSession();
+
+  // NOTES: Now we can add whatever data we want to the session
+  req.session.authenticatedUser = {
+    userId: user.userId,
+    isPro: user.isPro,
+    isAdmin: user.isAdmin,
+    username: user.username,
+  };
+  req.session.loggedIn = true;
+
+  res.sendStatus(200);
+}
+
+export {registerUser, logIn};

@@ -1,19 +1,17 @@
+import { createHash } from 'crypto';
 import { AppDataSource } from '../dataSource';
 import { Link } from '../entities/Link';
 
 const linkRepository = AppDataSource.getRepository(Link);
 
 async function getLinkById(linkId: string): Promise<Link | null> {
-  const queriedLink = await linkRepository.findOne({
-    select: {
-      linkId: true,
-      originalUrl: true,
-      lastAccessedOn: true,
-      numHits: true,
-      user: true,
-    },
-    where: { linkId },
-  });
+  const queriedLink = await linkRepository
+    .createQueryBuilder('link')
+    .leftJoinAndSelect('link.user', 'user')
+    .where('linkId = :linkId', { linkId })
+    .select(['linkId, originalUrl, lastAccessedOn, numHits, user'])
+    .getOne();
+
   return queriedLink;
 }
 
@@ -35,6 +33,7 @@ async function createNewLink (originalUrl: string, linkId: string, creator: User
 async function updateLinkVisits(link: Link): Promise<Link> {
     // Increment the link's number of hits property
     // Create a new date object and assign it to the link's `lastAccessedOn` property.
+    const now = new Date();
 
     // Update the link's numHits and lastAccessedOn in the database
     // return the updated link
@@ -52,6 +51,7 @@ async function getLinksByUserId(userId: string): Promise<Link[]> {
 }
 
 async function getLinksByUserIdForOwnAccount(userId: string): Promise<Link[]> {
-  // TODO: This function is pretty much the same but it should return the fields 
+  // TODO: This function is pretty much the same but it should return the fields
+}
 
-export {};
+export {getLinkById, createLinkId, createNewLink, getLinksByUserId, getLinksByUserIdForOwnAccount};
