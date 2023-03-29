@@ -15,28 +15,28 @@ async function getLinkById(linkId: string): Promise<Link | null> {
   return queriedLink;
 }
 
-function createLinkId (originalUrl: string, userId: string): string {
-    const md5 = createHash('md5');
-    // concatenate the original url and userId
-    md5.update(originalUrl + userId);
-    const urlHash = md5.digest('base64url');
-    // Get only the first 9 characters of `urlHash`
-    const linkId = urlHash.substring(0, 9);
+function createLinkId(originalUrl: string, userId: string): string {
+  const md5 = createHash('md5');
+  // concatenate the original url and userId
+  md5.update(originalUrl + userId);
+  const urlHash = md5.digest('base64url');
+  // Get only the first 9 characters of `urlHash`
+  const linkId = urlHash.substring(0, 9);
 
-    return linkId;
+  return linkId;
 }
 
-async function createNewLink (originalUrl: string, linkId: string, creator: User): Promise<Link> {
-    // TODO: Implement me!
+async function createNewLink(originalUrl: string, linkId: string, creator: User): Promise<Link> {
+  // TODO: Implement me!
 }
 
 async function updateLinkVisits(link: Link): Promise<Link> {
-    // Increment the link's number of hits property
-    // Create a new date object and assign it to the link's `lastAccessedOn` property.
-    const now = new Date();
+  // Increment the link's number of hits property
+  // Create a new date object and assign it to the link's `lastAccessedOn` property.
+  const now = new Date();
 
-    // Update the link's numHits and lastAccessedOn in the database
-    // return the updated link
+  // Update the link's numHits and lastAccessedOn in the database
+  // return the updated link
 }
 
 async function getLinksByUserId(userId: string): Promise<Link[]> {
@@ -44,7 +44,9 @@ async function getLinksByUserId(userId: string): Promise<Link[]> {
     .createQueryBuilder('link')
     .where({ user: { userId } }) // NOTES: This is how you do nested WHERE clauses
     .leftJoin(/* TODO: specify the relation you want to join with */)
-    .select([/*TODO: specify the fields you want */])
+    .select([
+      /* TODO: specify the fields you want */
+    ])
     .getMany();
 
   return links;
@@ -54,4 +56,11 @@ async function getLinksByUserIdForOwnAccount(userId: string): Promise<Link[]> {
   // TODO: This function is pretty much the same but it should return the fields
 }
 
-export {getLinkById, createLinkId, createNewLink, getLinksByUserId, getLinksByUserIdForOwnAccount};
+export {
+  getLinkById,
+  createLinkId,
+  createNewLink,
+  updateLinkVisits,
+  getLinksByUserId,
+  getLinksByUserIdForOwnAccount,
+};

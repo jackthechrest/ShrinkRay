@@ -1,36 +1,33 @@
 import { Request, Response } from 'express';
 import argon2 from 'argon2';
-import {
-  addNewUser,
-  getUserByUsername,
-} from '../models/UserModel';
+import { addNewUser, getUserByUsername } from '../models/UserModel';
 import { parseDatabaseError } from '../utils/db-utils';
 
 async function registerUser(req: Request, res: Response): Promise<void> {
-    // Implement the registration code
-    const { username, password } = req.body as AuthRequest;
+  // Implement the registration code
+  const { username, password } = req.body as AuthRequest;
 
-    // IMPORTANT: Hash the password
-    const passwordHash = await argon2.hash(password);
+  // IMPORTANT: Hash the password
+  const passwordHash = await argon2.hash(password);
 
-    // Make sure to check if the user with the given username exists before attempting to add the account
-    const user = await getUserByUsername(username);
+  // Make sure to check if the user with the given username exists before attempting to add the account
+  const user = await getUserByUsername(username);
 
-    if (user) {
-      res.sendStatus(409); // conflict
-      return;
-    }
+  if (user) {
+    res.sendStatus(409); // conflict
+    return;
+  }
 
-    try {
-      // IMPORTANT: Store the `passwordHash` and NOT the plaintext password
-      const newUser = await addNewUser(username, passwordHash);
-      console.log(newUser);
-      res.sendStatus(201);
-    } catch (err) {
-      console.error(err);
-      const databaseErrorMessage = parseDatabaseError(err);
-      res.status(500).json(databaseErrorMessage);
-    }
+  try {
+    // IMPORTANT: Store the `passwordHash` and NOT the plaintext password
+    const newUser = await addNewUser(username, passwordHash);
+    console.log(newUser);
+    res.sendStatus(201);
+  } catch (err) {
+    console.error(err);
+    const databaseErrorMessage = parseDatabaseError(err);
+    res.status(500).json(databaseErrorMessage);
+  }
 }
 
 async function logIn(req: Request, res: Response): Promise<void> {
@@ -65,4 +62,4 @@ async function logIn(req: Request, res: Response): Promise<void> {
   res.sendStatus(200);
 }
 
-export {registerUser, logIn};
+export { registerUser, logIn };
