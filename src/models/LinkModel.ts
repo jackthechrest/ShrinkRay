@@ -6,12 +6,7 @@ import { User } from '../entities/User';
 const linkRepository = AppDataSource.getRepository(Link);
 
 async function getLinkById(linkId: string): Promise<Link | null> {
-  const queriedLink = await linkRepository
-    .createQueryBuilder('link')
-    .leftJoinAndSelect('link.user', 'user')
-    .where('linkId = :linkId', { linkId })
-    .select(['linkId', 'originalUrl', 'lastAccessedOn', 'numHits', 'user'])
-    .getOne();
+  const queriedLink = await linkRepository.findOne({ where: { linkId }, relations: ['user'] });
 
   return queriedLink;
 }
@@ -32,6 +27,7 @@ async function createNewLink(originalUrl: string, linkId: string, creator: User)
   newLink.originalUrl = originalUrl;
   newLink.linkId = linkId;
   newLink.user = creator;
+  newLink.lastAccessedOn = new Date();
 
   newLink = await linkRepository.save(newLink);
 
@@ -63,8 +59,8 @@ async function getLinksByUserId(userId: string): Promise<Link[]> {
   const links = await linkRepository
     .createQueryBuilder('link')
     .where({ user: { userId } }) // NOTES: This is how you do nested WHERE clauses
-    .leftJoin('link.user', 'user')
-    .select(['linkId', 'originalUrl', 'user.userId', 'user.username', 'user.isAdmin'])
+    .leftJoinAndSelect('link.user', 'user')
+    .select(['link.linkId', 'link.originalUrl', 'user.userId', 'user.username', 'user.isAdmin'])
     .getMany();
 
   return links;
@@ -74,12 +70,12 @@ async function getLinksByUserIdForOwnAccount(userId: string): Promise<Link[]> {
   const links = await linkRepository
     .createQueryBuilder('link')
     .where({ user: { userId } })
-    .leftJoin('link.user', 'user')
+    .leftJoinAndSelect('link.user', 'user')
     .select([
-      'linkId',
-      'originalUrl',
-      'numHits',
-      'lastAccessedOn',
+      'link.linkId',
+      'link.originalUrl',
+      'link.numHits',
+      'link.lastAccessedOn',
       'user.userId',
       'user.username',
       'user.isPro',

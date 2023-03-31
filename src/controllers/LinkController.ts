@@ -34,11 +34,13 @@ async function shortenUrl(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  const numOfLinks = user.links.length;
+
   // Check if the user is neither a "pro" nor an "admin" account
   if (!user.isAdmin && !user.isPro) {
     // check how many links they've already generated
     // if they have generated 5 links, send the appropriate response
-    if (user.links.length === 5) {
+    if (numOfLinks >= 5) {
       res.sendStatus(403); // Forbidden;
       return;
     }
@@ -51,6 +53,7 @@ async function shortenUrl(req: Request, res: Response): Promise<void> {
   // Add the new link to the database (wrap this in try/catch)
   try {
     const newLink = await createNewLink(originalUrl, linkId, user);
+    // await updateUserLinks(user, newLink);
     console.log(newLink);
     // Respond with status 201 if the insert was successful
     res.sendStatus(201); // OK

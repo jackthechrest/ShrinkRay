@@ -50,6 +50,7 @@ async function logIn(req: Request, res: Response): Promise<void> {
   // NOTES: Remember to clear the session before setting their authenticated session data
   await req.session.clearSession();
 
+  console.log(user);
   // NOTES: Now we can add whatever data we want to the session
   req.session.authenticatedUser = {
     userId: user.userId,
