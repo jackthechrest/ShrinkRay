@@ -44,12 +44,7 @@ async function updateLinkVisits(link: Link): Promise<Link> {
   updatedLink.lastAccessedOn = now;
 
   // Update the link's numHits and lastAccessedOn in the database
-  await linkRepository
-    .createQueryBuilder()
-    .update(Link)
-    .set({ numHits: updatedLink.numHits, lastAccessedOn: updatedLink.lastAccessedOn })
-    .where({ linkId: updatedLink.linkId })
-    .execute();
+  await linkRepository.save(updatedLink);
 
   // return the updated link
   return updatedLink;

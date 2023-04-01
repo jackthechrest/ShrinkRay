@@ -5,7 +5,7 @@ type DatabaseConstraintError = {
 };
 
 type NewLinkRequest = {
-  orignalUrl: string;
+  originalUrl: string;
 };
 
 type AuthRequest = {
