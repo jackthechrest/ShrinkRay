@@ -13,7 +13,7 @@ import { parseDatabaseError } from '../utils/db-utils';
 
 async function shortenUrl(req: Request, res: Response): Promise<void> {
   if (!req.session.loggedIn) {
-    res.sendStatus(403);
+    res.redirect('/login'); // Not Logged In
     return;
   }
 
@@ -22,12 +22,13 @@ async function shortenUrl(req: Request, res: Response): Promise<void> {
 
   const user = await getUserById(authenticatedUser.userId);
   if (!user) {
-    res.redirect('/login'); // Not Logged In
+    res.sendStatus(404); // Not Found
     return;
   }
 
+  console.log(user);
   if ((!user.isPro || !user.isAdmin) && user.links.length >= 5) {
-    res.sendStatus(403);
+    res.sendStatus(403); // Forbidden
     return;
   }
 
@@ -89,23 +90,21 @@ async function getLinks(req: Request, res: Response): Promise<void> {
 
 async function deleteLink(req: Request, res: Response): Promise<void> {
   const { targetedUserId, targetLinkId } = req.params;
-  const { loggedIn } = req.session;
-  const { userId, isAdmin } = req.session.authenticatedUser;
+  const { loggedIn, authenticatedUser } = req.session;
 
   if (!loggedIn) {
     res.sendStatus(401); // Not Logged In
     return;
   }
 
-  if (userId !== targetedUserId && !isAdmin) {
-    res.sendStatus(403); // Forbidden
+  const link = await getLinkById(targetLinkId);
+  if (!link) {
+    res.sendStatus(404); // Not Found
     return;
   }
 
-  const link = await getLinkById(targetLinkId);
-
-  if (!link) {
-    res.sendStatus(404); // Not Found
+  if (authenticatedUser.userId !== targetedUserId && !authenticatedUser.isAdmin) {
+    res.sendStatus(403); // Forbidden
     return;
   }
 
